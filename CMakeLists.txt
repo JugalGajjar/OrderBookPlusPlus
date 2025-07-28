@@ -1,66 +1,58 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 project(OrderBookPlusPlus LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# FetchContent for Catch2 and pybind11
-include(FetchContent)
+# Homebrew prefix, adjust if needed
+set(HOMEBREW_PREFIX "/opt/homebrew")
 
-# -------------------------------
-# Fetch Catch2
-# -------------------------------
-FetchContent_Declare(
-  catch2
-  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-  GIT_TAG v3.5.2 # or latest stable
+# Include directories for brewed libraries
+include_directories(
+    ${HOMEBREW_PREFIX}/include
+    ${HOMEBREW_PREFIX}/include/pybind11
+    include
 )
-FetchContent_MakeAvailable(catch2)
 
-# -------------------------------
-# Fetch pybind11
-# -------------------------------
-FetchContent_Declare(
-  pybind11
-  GIT_REPOSITORY https://github.com/pybind/pybind11.git
-  GIT_TAG v2.11.1 # or latest stable
+# Link directories for brewed libraries
+link_directories(
+    ${HOMEBREW_PREFIX}/lib
 )
-FetchContent_MakeAvailable(pybind11)
 
-# -------------------------------
-# OrderBook core library
-# -------------------------------
+# Source files and headers
 file(GLOB_RECURSE ORDERBOOK_HEADERS include/*.h)
 file(GLOB_RECURSE ORDERBOOK_SOURCES src/*.cpp)
 
+# Core static library
 add_library(orderbook_core STATIC ${ORDERBOOK_SOURCES} ${ORDERBOOK_HEADERS})
-target_include_directories(orderbook_core PUBLIC include)
+target_include_directories(orderbook_core PUBLIC
+    include
+    ${HOMEBREW_PREFIX}/include/pybind11
+    /opt/homebrew/Frameworks/Python.framework/Headers
+)
 
-# -------------------------------
-# Test: test_orderbook
-# -------------------------------
+# Test executable: test_orderbook
 add_executable(test_orderbook tests/test_orderbook.cpp)
-target_link_libraries(test_orderbook PRIVATE orderbook_core Catch2::Catch2WithMain)
+target_link_libraries(test_orderbook PRIVATE orderbook_core gtest gtest_main)
 target_include_directories(test_orderbook PRIVATE include)
 
-# -------------------------------
-# Test: test_performance
-# -------------------------------
+# Test executable: test_performance
 add_executable(test_performance tests/test_performance.cpp)
-target_link_libraries(test_performance PRIVATE orderbook_core Catch2::Catch2WithMain)
+target_link_libraries(test_performance PRIVATE orderbook_core gtest gtest_main)
 target_include_directories(test_performance PRIVATE include)
 
-# -------------------------------
-# Python Bindings
-# -------------------------------
-pybind11_add_module(orderbook_py src/pybind.cpp)
-target_link_libraries(orderbook_py PRIVATE orderbook_core)
-target_include_directories(orderbook_py PRIVATE include)
-
-# -------------------------------
 # Enable testing
-# -------------------------------
-include(CTest)
-include(Catch)
-catch_discover_tests(test_orderbook)
-catch_discover_tests(test_performance)
+enable_testing()
+add_test(NAME test_orderbook COMMAND test_orderbook)
+add_test(NAME test_performance COMMAND test_performance)
+
+# Python bindings module
+add_library(orderbook_py MODULE src/pybind.cpp)
+target_include_directories(orderbook_py PRIVATE include ${HOMEBREW_PREFIX}/include/pybind11 /opt/homebrew/Frameworks/Python.framework/Headers)
+target_link_libraries(orderbook_py PRIVATE orderbook_core)
+
+# macOS specific flags to avoid "module has no main" error for Python extensions
+set_target_properties(orderbook_py PROPERTIES
+    PREFIX ""
+    SUFFIX ".so"
+)
