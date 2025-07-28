@@ -46,10 +46,21 @@ enable_testing()
 add_test(NAME test_orderbook COMMAND test_orderbook)
 add_test(NAME test_performance COMMAND test_performance)
 
+# Find Python and pybind11 packages
+find_package(Python COMPONENTS Interpreter Development REQUIRED)
+find_package(pybind11 REQUIRED)
+
 # Python bindings module
 add_library(orderbook_py MODULE src/pybind.cpp)
-target_include_directories(orderbook_py PRIVATE include ${HOMEBREW_PREFIX}/include/pybind11 /opt/homebrew/Frameworks/Python.framework/Headers)
-target_link_libraries(orderbook_py PRIVATE orderbook_core)
+target_include_directories(orderbook_py PRIVATE
+    include
+    ${HOMEBREW_PREFIX}/include/pybind11
+)
+target_link_libraries(orderbook_py PRIVATE
+    orderbook_core
+    pybind11::module
+    Python::Python
+)
 
 # macOS specific flags to avoid "module has no main" error for Python extensions
 set_target_properties(orderbook_py PROPERTIES
