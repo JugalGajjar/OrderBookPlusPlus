@@ -11,9 +11,9 @@
 
 namespace OrderBook {
 
-class OrderBook {
+class OrderBookEngine {
 public:
-    explicit OrderBook(std::string symbol);
+    explicit OrderBookEngine(std::string symbol);
 
     // Core API
     void add_order(const Order& order);
