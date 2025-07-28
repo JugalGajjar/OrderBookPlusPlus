@@ -4,19 +4,19 @@ project(OrderBookPlusPlus LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Homebrew prefix, adjust if needed
-set(HOMEBREW_PREFIX "/opt/homebrew")
+# Find Python and pybind11 packages
+find_package(Python COMPONENTS Interpreter Development REQUIRED)
+find_package(pybind11 REQUIRED)
 
-# Include directories for brewed libraries
+# Find GoogleTest from Miniconda environment
+find_package(GTest REQUIRED)
+
+# Include directories for all
 include_directories(
-    ${HOMEBREW_PREFIX}/include
-    ${HOMEBREW_PREFIX}/include/pybind11
     include
-)
-
-# Link directories for brewed libraries
-link_directories(
-    ${HOMEBREW_PREFIX}/lib
+    ${Python_INCLUDE_DIRS}
+    ${pybind11_INCLUDE_DIRS}
+    ${GTEST_INCLUDE_DIRS}   # <-- Add gtest include dirs here
 )
 
 # Source files and headers
@@ -27,18 +27,18 @@ file(GLOB_RECURSE ORDERBOOK_SOURCES src/*.cpp)
 add_library(orderbook_core STATIC ${ORDERBOOK_SOURCES} ${ORDERBOOK_HEADERS})
 target_include_directories(orderbook_core PUBLIC
     include
-    ${HOMEBREW_PREFIX}/include/pybind11
-    /opt/homebrew/Frameworks/Python.framework/Headers
+    ${Python_INCLUDE_DIRS}
+    ${pybind11_INCLUDE_DIRS}
 )
 
 # Test executable: test_orderbook
 add_executable(test_orderbook tests/test_orderbook.cpp)
-target_link_libraries(test_orderbook PRIVATE orderbook_core gtest gtest_main)
+target_link_libraries(test_orderbook PRIVATE orderbook_core GTest::GTest GTest::Main)  # Use imported targets
 target_include_directories(test_orderbook PRIVATE include)
 
 # Test executable: test_performance
 add_executable(test_performance tests/test_performance.cpp)
-target_link_libraries(test_performance PRIVATE orderbook_core gtest gtest_main)
+target_link_libraries(test_performance PRIVATE orderbook_core GTest::GTest GTest::Main)
 target_include_directories(test_performance PRIVATE include)
 
 # Enable testing
@@ -46,15 +46,12 @@ enable_testing()
 add_test(NAME test_orderbook COMMAND test_orderbook)
 add_test(NAME test_performance COMMAND test_performance)
 
-# Find Python and pybind11 packages
-find_package(Python COMPONENTS Interpreter Development REQUIRED)
-find_package(pybind11 REQUIRED)
-
 # Python bindings module
 add_library(orderbook_py MODULE src/pybind.cpp)
 target_include_directories(orderbook_py PRIVATE
     include
-    ${HOMEBREW_PREFIX}/include/pybind11
+    ${pybind11_INCLUDE_DIRS}
+    ${Python_INCLUDE_DIRS}
 )
 target_link_libraries(orderbook_py PRIVATE
     orderbook_core
@@ -66,5 +63,5 @@ target_link_libraries(orderbook_py PRIVATE
 set_target_properties(orderbook_py PROPERTIES
     PREFIX ""
     SUFFIX ".so"
-    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/python"  # Output path
+    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/python"
 )
