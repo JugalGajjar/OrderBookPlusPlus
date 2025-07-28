@@ -32,7 +32,6 @@ OrderBookPlusPlus/
 ├── python/
 │ ├── demo.py               # Sample usage from Python
 │ └── visualization.py      # Visualization utilities
-├── build/                  # CMake build output
 ├── CMakeLists.txt          # CMake build configuration
 ├── README.md               # Project README file
 └── LICENSE                 # Project LICENSE
