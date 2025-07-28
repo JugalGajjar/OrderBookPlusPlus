@@ -36,12 +36,12 @@ PYBIND11_MODULE(orderbook_py, m) {
         .def_readonly("quantity", &OrderBook::Trade::quantity)
         .def_readonly("timestamp", &OrderBook::Trade::timestamp);
 
-    py::class_<OrderBook::OrderBook>(m, "OrderBook")
+    py::class_<OrderBook::OrderBookEngine>(m, "OrderBook")
         .def(py::init<const std::string &>())
-        .def("add_order", &OrderBook::OrderBook::add_order)
-        .def("cancel_order", &OrderBook::OrderBook::cancel_order)
-        .def("get_bids", &OrderBook::OrderBook::get_bids)
-        .def("get_asks", &OrderBook::OrderBook::get_asks)
-        .def("get_trades", &OrderBook::OrderBook::get_trades)
-        .def("get_order", &OrderBook::OrderBook::get_order);
+        .def("add_order", &OrderBook::OrderBookEngine::add_order)
+        .def("cancel_order", &OrderBook::OrderBookEngine::cancel_order)
+        .def("get_bids", &OrderBook::OrderBookEngine::get_bids)
+        .def("get_asks", &OrderBook::OrderBookEngine::get_asks)
+        .def("get_trades", &OrderBook::OrderBookEngine::get_trades)
+        .def("get_order", &OrderBook::OrderBookEngine::get_order);
 }

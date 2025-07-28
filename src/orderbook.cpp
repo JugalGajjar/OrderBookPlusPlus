@@ -5,7 +5,7 @@ namespace OrderBook {
 
 // PriceLevelNodeList methods
 
-void OrderBook::PriceLevelNodeList::append(OrderNode* node) {
+void OrderBookEngine::PriceLevelNodeList::append(OrderNode* node) {
     node->prev = tail;
     node->next = nullptr;
     if (tail) {
@@ -16,7 +16,7 @@ void OrderBook::PriceLevelNodeList::append(OrderNode* node) {
     total_quantity += (node->order.quantity - node->order.filled_quantity);
 }
 
-void OrderBook::PriceLevelNodeList::remove(OrderNode* node) {
+void OrderBookEngine::PriceLevelNodeList::remove(OrderNode* node) {
     total_quantity -= (node->order.quantity - node->order.filled_quantity);
 
     if (node->prev) {
@@ -35,11 +35,11 @@ void OrderBook::PriceLevelNodeList::remove(OrderNode* node) {
     node->next = nullptr;
 }
 
-// OrderBook implementation
+// OrderBookEngine implementation
 
-OrderBook::OrderBook(std::string symbol) : symbol_(std::move(symbol)) {}
+OrderBookEngine::OrderBookEngine(std::string symbol) : symbol_(std::move(symbol)) {}
 
-void OrderBook::add_order(const Order& order) {
+void OrderBookEngine::add_order(const Order& order) {
     auto* node = new OrderNode(order);
     order_map_[order.order_id] = node;
 
@@ -63,7 +63,7 @@ void OrderBook::add_order(const Order& order) {
     }
 }
 
-void OrderBook::cancel_order(uint64_t order_id) {
+void OrderBookEngine::cancel_order(uint64_t order_id) {
     auto it = order_map_.find(order_id);
     if (it == order_map_.end()) return;
 
@@ -99,7 +99,7 @@ void OrderBook::cancel_order(uint64_t order_id) {
     delete node;
 }
 
-std::vector<PriceLevel> OrderBook::get_bids() const {
+std::vector<PriceLevel> OrderBookEngine::get_bids() const {
     std::vector<PriceLevel> result;
     for (const auto& [price, level] : bids_) {
         result.emplace_back(price, level.total_quantity);
@@ -107,7 +107,7 @@ std::vector<PriceLevel> OrderBook::get_bids() const {
     return result;
 }
 
-std::vector<PriceLevel> OrderBook::get_asks() const {
+std::vector<PriceLevel> OrderBookEngine::get_asks() const {
     std::vector<PriceLevel> result;
     for (const auto& [price, level] : asks_) {
         result.emplace_back(price, level.total_quantity);
@@ -115,11 +115,11 @@ std::vector<PriceLevel> OrderBook::get_asks() const {
     return result;
 }
 
-std::vector<Trade> OrderBook::get_trades() const {
+std::vector<Trade> OrderBookEngine::get_trades() const {
     return trades_;
 }
 
-std::shared_ptr<Order> OrderBook::get_order(uint64_t order_id) const {
+std::shared_ptr<Order> OrderBookEngine::get_order(uint64_t order_id) const {
     auto it = order_map_.find(order_id);
     if (it != order_map_.end()) {
         return std::make_shared<Order>(it->second->order);
@@ -127,7 +127,7 @@ std::shared_ptr<Order> OrderBook::get_order(uint64_t order_id) const {
     return nullptr;
 }
 
-void OrderBook::match_order(OrderNode* taker) {
+void OrderBookEngine::match_order(OrderNode* taker) {
     // For BUY taker, match with asks ascending (lowest ask)
     // For SELL taker, match with bids descending (highest bid)
 
@@ -234,7 +234,7 @@ void OrderBook::match_order(OrderNode* taker) {
     }
 }
 
-void OrderBook::execute_trade(OrderNode* taker, OrderNode* maker, Price price, Quantity qty) {
+void OrderBookEngine::execute_trade(OrderNode* taker, OrderNode* maker, Price price, Quantity qty) {
     taker->order.filled_quantity += qty;
     maker->order.filled_quantity += qty;
 
@@ -249,7 +249,7 @@ void OrderBook::execute_trade(OrderNode* taker, OrderNode* maker, Price price, Q
     });
 }
 
-void OrderBook::add_to_book(OrderNode* node) {
+void OrderBookEngine::add_to_book(OrderNode* node) {
     if (node->order.side == Side::BUY) {
         auto& book = bids_;
         auto& level = book[node->order.price];
