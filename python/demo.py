@@ -1,4 +1,4 @@
-from orderbook import OrderBook, Side, OrderType, Order
+from orderbook_py import OrderBook, Side, OrderType, Order
 from visualization import visualize_order_book
 import time
 
