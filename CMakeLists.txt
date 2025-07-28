@@ -66,4 +66,5 @@ target_link_libraries(orderbook_py PRIVATE
 set_target_properties(orderbook_py PROPERTIES
     PREFIX ""
     SUFFIX ".so"
+    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/python"  # Output path
 )
