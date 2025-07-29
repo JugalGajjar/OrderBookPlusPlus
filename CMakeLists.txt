@@ -65,3 +65,22 @@ set_target_properties(orderbook_py PROPERTIES
     SUFFIX ".so"
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/python"
 )
+
+# Minimal example Python bindings module
+add_library(minimal MODULE src/pybind_minimal.cpp)
+target_include_directories(minimal PRIVATE
+    include
+    ${MINICONDA_PREFIX}/include  # Or adjust this if using Homebrew or other Python
+    ${MINICONDA_PREFIX}/include/pybind11  # if you have pybind11 headers separately
+)
+target_link_libraries(minimal PRIVATE
+    pybind11::module
+    Python::Python
+)
+
+# macOS specific flags for Python extension modules
+set_target_properties(minimal PROPERTIES
+    PREFIX ""
+    SUFFIX ".so"
+    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/python"  # Save in python folder
+)
