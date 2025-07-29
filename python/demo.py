@@ -2,10 +2,6 @@ from orderbook_py import OrderBook, Side, OrderType, Order
 from visualization import visualize_order_book
 import time
 
-import sys
-import os
-sys.path.append(os.path.dirname(__file__))
-
 def main():
     ob = OrderBook("AAPL")
     current_time = int(time.time())
